@@ -86,6 +86,37 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/js/lib/components/accordion.js":
+/*!********************************************!*\
+  !*** ./src/js/lib/components/accordion.js ***!
+  \********************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.accordion = function () {
+  let headActive = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'accordion-head--active';
+  let contentActive = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'accordion-content--active';
+  let paddings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 40;
+  for (let i = 0; i < this.length; i++) {
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).click(() => {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).toggleClass(headActive);
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i].nextElementSibling).toggleClass(contentActive);
+      if (this[i].classList.contains(headActive)) {
+        this[i].nextElementSibling.style.maxHeight = this[i].nextElementSibling.scrollHeight + paddings + "px";
+      } else {
+        this[i].nextElementSibling.style.maxHeight = "0px";
+      }
+    });
+  }
+};
+Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('.accordion-head').accordion();
+
+/***/ }),
+
 /***/ "./src/js/lib/components/dropdown.js":
 /*!*******************************************!*\
   !*** ./src/js/lib/components/dropdown.js ***!
@@ -120,7 +151,7 @@ Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('.dropdown-toggle').dropdo
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
 
-_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.modal = function () {
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.modal = function (created) {
   for (let i = 0; i < this.length; i++) {
     const target = this[i].getAttribute('data-target');
     Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).click(e => {
@@ -128,22 +159,100 @@ _core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.modal = function () {
       Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(target).fadeIn(500);
       document.body.style.overflow = 'hidden';
     });
-  }
-  const closeElements = document.querySelectorAll('[data-close]');
-  closeElements.forEach(elem => {
-    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(elem).click(() => {
-      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('.modal').fadeOut(500);
-      document.body.style.overflow = '';
+    const closeElements = document.querySelectorAll(`${target} [data-close]`);
+    closeElements.forEach(elem => {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(elem).click(() => {
+        Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(target).fadeOut(500);
+        document.body.style.overflow = '';
+        if (created) {
+          document.querySelector(target).remove();
+        }
+      });
     });
-  });
-  Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('.modal').click(e => {
-    if (e.target.classList.contains('modal')) {
-      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('.modal').fadeOut(500);
-      document.body.style.overflow = '';
-    }
-  });
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(target).click(e => {
+      if (e.target.classList.contains('modal')) {
+        Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(target).fadeOut(500);
+        document.body.style.overflow = '';
+        if (created) {
+          document.querySelector(target).remove();
+        }
+      }
+    });
+  }
 };
 Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('[data-toggle="modal"]').modal();
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.createModal = function () {
+  let {
+    text,
+    btns
+  } = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  for (let i = 0; i < this.length; i++) {
+    let modal = document.createElement('div');
+    modal.classList.add('modal');
+    modal.setAttribute('id', this[i].getAttribute('data-target').slice(1));
+
+    // btns = {count: num, settings: [[text, classNames=[], close, cb]]}
+    const buttons = [];
+    for (let j = 0; j < btns.count; j++) {
+      let btn = document.createElement('button');
+      btn.classList.add('btn', ...btns.settings[j][1]);
+      btn.textContent = btns.settings[j][0];
+      if (btns.settings[j][2]) {
+        btn.setAttribute('data-close', 'true');
+      }
+      if (btns.settings[j][3] && typeof btns.settings[j][3] === 'function') {
+        btn.addEventListener('click', btns.settings[j][3]);
+      }
+      buttons.push(btn);
+    }
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <button class="close" data-close>
+                    <span>&times;</span>
+                </button>
+                <div class="modal-header">
+                    <div class="modal-title">
+                        ${text.title}
+                    </div>
+                </div>
+                <div class="modal-body">
+                    ${text.body}
+                </div>
+                <div class="modal-footer">
+                    
+                </div>
+            </div>
+        </div>
+        `;
+    modal.querySelector(".modal-footer").append(...buttons);
+    document.body.appendChild(modal);
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).modal(true);
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i].getAttribute('data-target')).fadeIn(500);
+  }
+};
+
+/***/ }),
+
+/***/ "./src/js/lib/components/tab.js":
+/*!**************************************!*\
+  !*** ./src/js/lib/components/tab.js ***!
+  \**************************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../core */ "./src/js/lib/core.js");
+
+_core__WEBPACK_IMPORTED_MODULE_0__["default"].prototype.tab = function () {
+  for (let i = 0; i < this.length; i++) {
+    Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).on('click', () => {
+      Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).addClass('tab-item--active').siblings().removeClass('tab-item--active').closest('.tab').find('.tab-content').removeClass('tab-content--active').eq(Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])(this[i]).index()).addClass('tab-content--active');
+    });
+  }
+};
+Object(_core__WEBPACK_IMPORTED_MODULE_0__["default"])('[data-tabpanel] .tab-item').tab();
 
 /***/ }),
 
@@ -196,6 +305,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_effects__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/effects */ "./src/js/lib/modules/effects.js");
 /* harmony import */ var _components_dropdown__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/dropdown */ "./src/js/lib/components/dropdown.js");
 /* harmony import */ var _components_modal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/modal */ "./src/js/lib/components/modal.js");
+/* harmony import */ var _components_tab__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/tab */ "./src/js/lib/components/tab.js");
+/* harmony import */ var _components_accordion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/accordion */ "./src/js/lib/components/accordion.js");
+
+
 
 
 
@@ -530,6 +643,20 @@ Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('[data-count="second"]'
 Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('button').eq(2).on('click', () => {
   Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('.w-500').fadeToggle(800);
 });
+Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('#trigger').click(() => Object(_lib_lib__WEBPACK_IMPORTED_MODULE_0__["default"])('#trigger').createModal({
+  text: {
+    title: 'Modal title',
+    body: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum minus doloremque nesciunt enim rem quam corporis? Dolorem pariatur magnam distinctio perferendis. Ratione dolorem voluptates iusto facilis odit veritatis, suscipit voluptatibus!'
+  },
+  btns: {
+    count: 3,
+    settings: [['Close', ['btn-danger', 'mr-10'], true], ['Save changes', ['btn-success'], false, () => {
+      alert('Данные сохранены');
+    }], ['Another btn', ['btn-warning', 'ml-10'], false, () => {
+      alert('Test btn');
+    }]]
+  }
+}));
 
 /***/ })
 
