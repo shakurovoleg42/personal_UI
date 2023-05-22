@@ -44,3 +44,6 @@ $('#trigger').click(() => $('#trigger').createModal({
         ]
     }
 }));
+
+$().get('https://gorest.co.in/public/v2/users')
+    .then(res => console.log(res));
